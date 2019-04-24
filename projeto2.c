@@ -1,43 +1,71 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
+void embaralhar_array(int array[], int n)
+{
+    srand(time(NULL));
+    for (int i = n - 1; i > 0; i--)
+    {
+        int j = rand() % (i + 1);
+        troca(&array[i], &array[j]);
+    }
+}
+void troca(int *a, int *b)
+{
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+int **tratar_arquivo(char name[], int i)
+{
+    FILE *fp;
+    char file[100];
+    sprintf(file, "DataSet/%s/%s_%.2d.txt", name, name, i);
+    printf("%.2d\t", i);
+    printf("abriu\n");
+    fp = fopen(file, "r");
+    if (fp == NULL)
+    {
+        printf("Cannot open file. %d\n", i);
+        exit(2);
+    }
+    // fscanf(fp, "%d", matriz[0][0]);
+
+    fclose(fp);
+    // return matriz;
+}
 
 int main()
 {
-    int num;
+    int **num;
     char *teste[30];
-    int matriz[1000][1000];
+    int array_teste[25], array_treino[25], array_geral[50];
+    //int **matriz;
     char file[100];
-    int a = 0, j = 0;
-    FILE *fp;
+    int a = 0, j = 0, n;
 
-    for (int i = 1; i < 10; i++)
+    for (int i = 0; i < 50; i++)
     {
-        sprintf(file, "DataSet/asphalt/asphalt_0%d.txt", i);
-
-        fp = fopen(file, "r");
-        if (fp == NULL)
-        {
-            printf("Cannot open file.\n");
-            exit(2);
-        }
-        fscanf(fp, "%d;%d", &matriz[0][0], &matriz[0][1]);
-
-        printf("%d\n", matriz[0][0]);
-        // while (!feof(fp)){
-        //     while(!feof(fp)){
-        //     fscanf(fp, "%d", &matriz[a][j]);
-        //     printf("%d\n", matriz[a][j]);
-        //     j++;
-        //     }
-        //     a++;
-        // }
-        fclose(fp);
+        array_geral[i] = i;
     }
-    // for(int i = 10;i < 51;i++){
-    //     num = i;
-    //     sprintf( file, "asphalt_%d.txt", num);
-    //     printf("%s\n",file);
-    // }
+    array_geral[0] = 50;
+    n = sizeof(array_geral) / sizeof(array_geral[0]);
+    embaralhar_array(array_geral, n);
+    for (int i = 0; i < 50; i++)
+    {
+        for (int j = 0; j < 25; j++)
+        {
+            array_teste[j] = array_geral[i];
+            i++;
+            array_treino[j] = array_geral[i];
+            i++;
+        }
+    }
+    for (int i = 0; i < 25; i++)
+    {
+        num = tratar_arquivo("asphalt", array_treino[i]);
+    }
 
     return 0;
 }
