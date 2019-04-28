@@ -11,7 +11,6 @@ int main()
     int **matriz_imagem;
     char *teste[30];
     int array_teste[25], array_treino[25], array_geral[50];
-    //int **matriz;
     char file[100];
     int a = 0, j = 0, n;
 
@@ -32,15 +31,11 @@ int main()
             i++;
         }
     }
-    matriz_imagem = tratar_arquivo("asphalt", 1);
-    //printf("%d\n", matriz_imagem[0][0]);
-    //
-    // for (int i = 0; i < 25; i++)
-    // {
-    //     matriz_imagem = tratar_arquivo("asphalt", array_treino[i]);
-    //     //printf("%d", matriz_imagem[0][0]);
-    //     // free(matriz_imagem);
-    // }
+    for (int i = 0; i < 25; i++)
+    {
+        matriz_imagem = tratar_arquivo("asphalt", array_treino[i]);
+        free(matriz_imagem);
+    }
 
     return 0;
 }
@@ -63,9 +58,9 @@ void troca(int *a, int *b)
 int **tratar_arquivo(char name[], int arquivo)
 {
     FILE *fp;
-    char file[100];
+    char caractere, file[100];
     int **matriz_imagem;
-    int linha = 0, coluna = 0, valor, caractere;
+    int linha = 0, coluna = 0, valor;
 
     matriz_imagem = (int **)malloc(sizeof(int *)); //alocação linha
     matriz_imagem[0] = (int *)malloc(sizeof(int)); // alocação coluna
@@ -77,24 +72,21 @@ int **tratar_arquivo(char name[], int arquivo)
         exit(1);
     }
     sprintf(file, "DataSet/%s/%s_%.2d.txt", name, name, arquivo);
+
     fp = fopen(file, "r");
     if (fp == NULL)
     {
         printf("Não foi possivel abrir o Aquivo %d\n", arquivo);
         exit(2);
     }
-    linha = 0;
-    coluna = 0;
     int a = 0;
     while (!feof(fp))
     {
         fscanf(fp, "%d%c", &valor, &caractere);
-        // printf("%d%c", valor, caractere);
         matriz_imagem[linha][coluna] = valor;
 
         if (caractere == '\n')
         {
-            printf("nunca entra nesse caralho é");
             a++;
             linha++;
             matriz_imagem = (int **)realloc(matriz_imagem, (linha + 1) * sizeof(int *)); //realocando na proxima linha
@@ -103,14 +95,11 @@ int **tratar_arquivo(char name[], int arquivo)
         }
         else
         {
-            printf("%d", a);
-            a++;
-            //coluna++;
-            // matriz_imagem[linha] = (int *)malloc(sizeof(int)); //alocando a coluna da mesma linha
+            coluna++;
+            matriz_imagem[linha] = (int *)realloc(matriz_imagem[linha], (coluna + 1) * sizeof(int)); //alocando a coluna da mesma linha
         }
     }
-
     fclose(fp);
 
-    return 0;
+    return matriz_imagem;
 }
