@@ -4,13 +4,15 @@
 
 void embaralhar_array(int array[], int n);
 void troca(int *a, int *b);
-int **tratar_arquivo(char name[], int i);
+int **tratar_arquivo(char name[], int i, int *tamanho);
+int tamanho_matriz(int tamanho, int **matriz);
+float *ilbp(int **matriz, int *tamanho_matriz);
 
 int main()
 {
     int **matriz_imagem;
     char *teste[30];
-    int array_teste[25], array_treino[25], array_geral[50];
+    int array_teste[25], array_treino[25], array_geral[50], *tamanho;
     char file[100];
     int a = 0, j = 0, n;
 
@@ -33,7 +35,10 @@ int main()
     }
     for (int i = 0; i < 25; i++)
     {
-        matriz_imagem = tratar_arquivo("asphalt", array_treino[i]);
+        matriz_imagem = tratar_arquivo("asphalt", array_treino[i], tamanho);
+        // pra calcular ilbp e glcm preciso do tamanho da matriz
+        printf("%d\n", *tamanho);
+
         free(matriz_imagem);
     }
 
@@ -55,7 +60,7 @@ void troca(int *a, int *b)
     *a = *b;
     *b = temp;
 }
-int **tratar_arquivo(char name[], int arquivo)
+int **tratar_arquivo(char name[], int arquivo, int *tamanho) // pra ser possivel a partir dessa funcao acessar o tamanho e a matriz,é necessario declarar tamanho como ponteiro
 {
     FILE *fp;
     char caractere, file[100];
@@ -99,7 +104,11 @@ int **tratar_arquivo(char name[], int arquivo)
             matriz_imagem[linha] = (int *)realloc(matriz_imagem[linha], (coluna + 1) * sizeof(int)); //alocando a coluna da mesma linha
         }
     }
+    *tamanho = linha - 1;
     fclose(fp);
 
     return matriz_imagem;
+}
+float *ilbp(int **matriz, int *tamanho_matriz)
+{
 }
