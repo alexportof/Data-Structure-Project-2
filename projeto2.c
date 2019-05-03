@@ -8,56 +8,57 @@
 void embaralhar_array(int array[], int n);
 void troca(int *a, int *b);
 int **tratar_arquivo(char name[], int i, int *tamanho);
-int tamanho_matriz(int tamanho, int **matriz);
-int *ilbp(int **matriz, int *tamanho);
-int *glcm(int **matriz, int *tamanho);
-int calcular_contraste(int **direcao);
-int calcular_homogeneidade(int **direcao);
-int calcular_energia(int **direcao);
-int normalizar_vetor(int *vetor, int tamanho);
-int *calcular_media(int **matriz);
+double *ilbp(int **matriz, int *tamanho);
+double *glcm(int **matriz, int *tamanho);
+double calcular_contraste(int **direcao);
+double calcular_homogeneidade(int **direcao);
+double calcular_energia(int **direcao);
+double *normalizar_vetor(double *vetor, int tamanho);
+double *calcular_media(int **matriz);
 
 int main()
 {
-    int **matriz_imagem, *tamanho, *array_ilbp, *vetor_glcm, *vetor_resultado;
-    int **matriz_resultados, *vetor_resultado_normalizado, *media_matriz_resultados;
+    int **matriz_imagem, *tamanho;
+    double *vetor_resultado, *media_matriz_resultados, *vetor_resultado_normalizado, *array_ilbp, *vetor_glcm, **matriz_resultados;
     char file[100];
     char *teste[30];
-    int array_teste[25], array_treino[25], array_geral[50];
-    int a = 0, n, count = 0;
+    int array_teste_asfalto[25], array_teste_grama[25], array_treino_asfalto[25], array_treino_grama[25], array_geral_asfalto[50], array_geral_grama[50];
+    int a = 0, n, count;
 
+    // ASFALTO
     for (int i = 0; i < 50; i++)
     {
-        array_geral[i] = i;
+        array_geral_asfalto[i] = i;
     }
 
-    array_geral[0] = 50;
-    n = sizeof(array_geral) / sizeof(array_geral[0]);
-    embaralhar_array(array_geral, n);
+    array_geral_asfalto[0] = 50;
+    n = sizeof(array_geral_asfalto) / sizeof(array_geral_asfalto[0]);
+    embaralhar_array(array_geral_asfalto, n);
+    matriz_resultados = (double **)malloc(25 * sizeof(double *));
 
     for (int i = 0; i < 50; i++)
     {
         for (int j = 0; j < 25; j++)
         {
-            array_teste[j] = array_geral[i];
+            array_teste_asfalto[j] = array_geral_asfalto[i];
             i++;
-            array_treino[j] = array_geral[i];
+            array_treino_asfalto[j] = array_geral_asfalto[i];
             i++;
         }
     }
 
     for (int i = 0; i < 25; i++)
     {
-        matriz_imagem = tratar_arquivo("asphalt", array_treino[i], &tamanho);
+        matriz_imagem = tratar_arquivo("asphalt", array_treino_asfalto[i], &tamanho);
         // pra calcular ilbp e glcm preciso do tamanho da matriz
         array_ilbp = ilbp(matriz_imagem, &tamanho);
         vetor_glcm = glcm(matriz_imagem, &tamanho);
 
-        vetor_resultado = (int *)malloc(536 * sizeof(int));
-        vetor_resultado_normalizado = (int *)malloc(536 * sizeof(int));
+        vetor_resultado = (double *)malloc(536 * sizeof(double));
+        vetor_resultado_normalizado = (double *)malloc(536 * sizeof(double));
         if (vetor_resultado == NULL || vetor_resultado_normalizado == NULL)
             exit(1);
-
+        count = 0;
         while (count < 536)
         {
             if (count < 512)
@@ -72,8 +73,64 @@ int main()
             }
         }
         vetor_resultado_normalizado = normalizar_vetor(vetor_resultado, 536);
-        matriz_resultados = (int **)malloc(sizeof(int *));
-        matriz_resultados[i] = (int *)malloc(536 * sizeof(int));
+        matriz_resultados[i] = (double *)malloc(536 * sizeof(double));
+        matriz_resultados[i] = vetor_resultado_normalizado;
+
+        free(matriz_imagem);
+        free(vetor_glcm);
+        free(array_ilbp);
+    }
+    media_matriz_resultados = calcular_media(matriz_resultados);
+
+    // GRAMA
+    for (int i = 0; i < 50; i++)
+    {
+        array_geral_grama[i] = i;
+    }
+
+    array_geral_grama[0] = 50;
+    n = sizeof(array_geral_grama) / sizeof(array_geral_grama[0]);
+    embaralhar_array(array_geral_grama, n);
+    matriz_resultados = (double **)malloc(25 * sizeof(double *));
+
+    for (int i = 0; i < 50; i++)
+    {
+        for (int j = 0; j < 25; j++)
+        {
+            array_teste_grama[j] = array_geral_grama[i];
+            i++;
+            array_treino_grama[j] = array_geral_grama[i];
+            i++;
+        }
+    }
+
+    for (int i = 0; i < 25; i++)
+    {
+        matriz_imagem = tratar_arquivo("grass", array_treino_grama[i], &tamanho);
+        // pra calcular ilbp e glcm preciso do tamanho da matriz
+        array_ilbp = ilbp(matriz_imagem, &tamanho);
+        vetor_glcm = glcm(matriz_imagem, &tamanho);
+
+        vetor_resultado = (double *)malloc(536 * sizeof(double));
+        vetor_resultado_normalizado = (double *)malloc(536 * sizeof(double));
+        if (vetor_resultado == NULL || vetor_resultado_normalizado == NULL)
+            exit(1);
+        count = 0;
+        while (count < 536)
+        {
+            if (count < 512)
+            {
+                vetor_resultado[count] = array_ilbp[count];
+                count++;
+            }
+            else
+            {
+                vetor_resultado[count] = vetor_glcm[count - 512];
+                count++;
+            }
+        }
+        vetor_resultado_normalizado = normalizar_vetor(vetor_resultado, 536);
+        matriz_resultados[i] = (double *)malloc(536 * sizeof(double));
         matriz_resultados[i] = vetor_resultado_normalizado;
 
         free(matriz_imagem);
@@ -84,33 +141,35 @@ int main()
 
     return 0;
 }
-int *calcular_media(int **matriz)
+double *calcular_media(int **matriz)
 {
-    int *resultado, media;
-    resultado = (int *)calloc(536, sizeof(int));
+    double *resultado, media;
+    resultado = (double *)calloc(536, sizeof(double));
     if (resultado == NULL)
         exit(1);
 
-    for (int i = 0; i < 536; i++)
+    for (int i = 0; i < 25; i++)
     {
-        for (int j = 0; j < 25; j++)
+        for (int j = 0; j < 536; j++)
         {
-            media = **matriz[j][i] / 25;
-            resultado[i] += media;
+            media = matriz[i][j] / 25;
+            resultado[j] += media;
         }
     }
     return resultado;
 }
 
-int normalizar_vetor(int *vetor, int tamanho)
+double *normalizar_vetor(double *vetor, int tamanho)
 {
-    int *vetor_normalizado;
-    vetor_normalizado = (int *)malloc(tamanho * sizeof(int));
+    double *vetor_normalizado;
+    vetor_normalizado = (double *)malloc(tamanho * sizeof(double));
     if (vetor_normalizado == NULL)
         exit(1);
     int menor = vetor[0];
+    //printf("\n\nVETOR CONCATENADO\n\n");
     for (int i = 1; i < tamanho; i++)
     {
+        // printf("%d ", vetor[i]);
         if (vetor[i] < menor)
             menor = vetor[i];
     }
@@ -120,17 +179,20 @@ int normalizar_vetor(int *vetor, int tamanho)
         if (vetor[i] > maior)
             maior = vetor[i];
     }
+    //printf("\nNORMALIZAR VETOR\n");
     for (int i = 0; i < tamanho; i++)
+    {
         vetor_normalizado[i] = (vetor[i] - menor) / (maior - menor);
-
+        //printf("%d  ", vetor_normalizado[i]);
+    }
     return vetor_normalizado;
 }
 
-int *glcm(int **matriz, int *tamanho)
+double *glcm(int **matriz, int *tamanho)
 {
     int **norte, **nordeste, **leste, **sudeste, **sul, **sudoeste, **oeste, **noroeste;
-    int *resultado;
-    resultado = (int *)calloc(24, sizeof(int));
+    double *resultado;
+    resultado = (double *)calloc(24, sizeof(double));
     norte = (int **)calloc(256, sizeof(int *));
     nordeste = (int **)calloc(256, sizeof(int *));
     sul = (int **)calloc(256, sizeof(int *));
@@ -171,7 +233,6 @@ int *glcm(int **matriz, int *tamanho)
         for (int j = 1; j < loop; j++)
         {
             int ponto_central = matriz[i][j];
-            // printf("%d\n", ponto_central);
 
             int valor_norte = matriz[i - 1][j];
             norte[ponto_central][valor_norte] += 1;
@@ -246,11 +307,11 @@ int *glcm(int **matriz, int *tamanho)
     return resultado;
 }
 
-int *ilbp(int **matriz, int *tamanho)
+double *ilbp(int **matriz, int *tamanho)
 {
-    float media;
-    int pixels[9], *array_ilbp, array_pos_media[9], numero_decimal, menor_binario;
-    array_ilbp = (int *)calloc(512, sizeof(int));
+    double media, *array_ilbp;
+    int pixels[9], array_pos_media[9], numero_decimal, menor_binario;
+    array_ilbp = (double *)calloc(512, sizeof(double));
     if (array_ilbp == NULL)
         exit(1);
 
@@ -367,35 +428,37 @@ void troca(int *a, int *b)
     *a = *b;
     *b = temp;
 }
-int calcular_contraste(int **direcao)
+double calcular_contraste(int **matriz)
 {
     double soma = 0;
     for (int i = 0; i < 256; i++)
     {
         for (int j = 0; j < 256; j++)
-            soma += pow(i - j, 2) * direcao[i][j];
+            soma += pow(i - j, 2) * matriz[i][j];
     }
 
     return soma;
 }
-int calcular_homogeneidade(int **direcao)
+
+double calcular_energia(int **matriz)
 {
     double soma = 0;
     for (int i = 0; i < 256; i++)
     {
         for (int j = 0; j < 256; j++)
-            soma += (direcao[i][j]) / (1 + sqrt(pow(i - j, 2)));
+            soma += pow(matriz[i][j], 2);
     }
 
     return soma;
 }
-int calcular_energia(int **direcao)
+
+double calcular_homogeneidade(int **matriz)
 {
     double soma = 0;
     for (int i = 0; i < 256; i++)
     {
         for (int j = 0; j < 256; j++)
-            soma += pow(direcao[i][j], 2);
+            soma += (matriz[i][j]) / (1 + sqrt(pow(i - j, 2)));
     }
 
     return soma;
