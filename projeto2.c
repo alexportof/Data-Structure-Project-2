@@ -1,3 +1,5 @@
+// Álex Porto Ferreira 170119815
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -12,23 +14,27 @@ int *glcm(int **matriz, int *tamanho);
 int calcular_contraste(int **direcao);
 int calcular_homogeneidade(int **direcao);
 int calcular_energia(int **direcao);
+int normalizar_vetor(int *vetor, int tamanho);
+int *calcular_media(int **matriz);
 
 int main()
 {
     int **matriz_imagem, *tamanho, *array_ilbp, *vetor_glcm, *vetor_resultado;
-    int **matriz_resultados;
+    int **matriz_resultados, *vetor_resultado_normalizado, *media_matriz_resultados;
     char file[100];
     char *teste[30];
     int array_teste[25], array_treino[25], array_geral[50];
-    int a = 0, j = 0, n;
+    int a = 0, n, count = 0;
 
     for (int i = 0; i < 50; i++)
     {
         array_geral[i] = i;
     }
+
     array_geral[0] = 50;
     n = sizeof(array_geral) / sizeof(array_geral[0]);
     embaralhar_array(array_geral, n);
+
     for (int i = 0; i < 50; i++)
     {
         for (int j = 0; j < 25; j++)
@@ -39,15 +45,19 @@ int main()
             i++;
         }
     }
+
     for (int i = 0; i < 25; i++)
     {
         matriz_imagem = tratar_arquivo("asphalt", array_treino[i], &tamanho);
         // pra calcular ilbp e glcm preciso do tamanho da matriz
         array_ilbp = ilbp(matriz_imagem, &tamanho);
         vetor_glcm = glcm(matriz_imagem, &tamanho);
-        vetor_resultado = (int *)malloc(536 * sizeof(int));
 
-        int count = 0;
+        vetor_resultado = (int *)malloc(536 * sizeof(int));
+        vetor_resultado_normalizado = (int *)malloc(536 * sizeof(int));
+        if (vetor_resultado == NULL || vetor_resultado_normalizado == NULL)
+            exit(1);
+
         while (count < 536)
         {
             if (count < 512)
@@ -61,14 +71,59 @@ int main()
                 count++;
             }
         }
-        matriz_resultados[i] = vetor_resultado;
+        vetor_resultado_normalizado = normalizar_vetor(vetor_resultado, 536);
+        matriz_resultados = (int **)malloc(sizeof(int *));
+        matriz_resultados[i] = (int *)malloc(536 * sizeof(int));
+        matriz_resultados[i] = vetor_resultado_normalizado;
+
+        free(matriz_imagem);
         free(vetor_glcm);
         free(array_ilbp);
-        free(matriz_imagem);
-        free(vetor_resultado);
     }
+    media_matriz_resultados = calcular_media(matriz_resultados);
 
     return 0;
+}
+int *calcular_media(int **matriz)
+{
+    int *resultado, media;
+    resultado = (int *)calloc(536, sizeof(int));
+    if (resultado == NULL)
+        exit(1);
+
+    for (int i = 0; i < 536; i++)
+    {
+        for (int j = 0; j < 25; j++)
+        {
+            media = **matriz[j][i] / 25;
+            resultado[i] += media;
+        }
+    }
+    return resultado;
+}
+
+int normalizar_vetor(int *vetor, int tamanho)
+{
+    int *vetor_normalizado;
+    vetor_normalizado = (int *)malloc(tamanho * sizeof(int));
+    if (vetor_normalizado == NULL)
+        exit(1);
+    int menor = vetor[0];
+    for (int i = 1; i < tamanho; i++)
+    {
+        if (vetor[i] < menor)
+            menor = vetor[i];
+    }
+    int maior = vetor[0];
+    for (int i = 1; i < tamanho; i++)
+    {
+        if (vetor[i] > maior)
+            maior = vetor[i];
+    }
+    for (int i = 0; i < tamanho; i++)
+        vetor_normalizado[i] = (vetor[i] - menor) / (maior - menor);
+
+    return vetor_normalizado;
 }
 
 int *glcm(int **matriz, int *tamanho)
